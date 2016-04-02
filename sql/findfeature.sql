@@ -1,0 +1,11 @@
+delete from feature;
+create temporary table A as select sum(case when content like '%人民幣%' or content like '%影子銀行%' or content like '%中國銀行%' then 1 else 0 end ) as Score,'CNY' as Currency,date_trunc('day',datetime) as Data_Dt from cnYes group by Data_Dt,Currency;
+insert into feature (data_dt,currency,score)  (select data_dt,currency,score from A order by data_dt);
+create temporary table B as select sum(case when content like '%美金%' or content like '%美元%' or content like '%聯準會%' or content like '%FED%' or content like '%升息%' or content like '%QE%' or content like '%量化寬鬆%' then 1 else 0 end ) as Score,'USD' as Currency,date_trunc('day',datetime) as Data_Dt from cnYes group by Data_Dt,Currency;
+insert into feature (data_dt,currency,score)  (select data_dt,currency,score from B order by data_Dt);
+create temporary table C as select sum(case when content like '%日元%' or content like '%安倍晉%' or content like '%三支箭%' or content like '%安倍經濟學%' or content like '%日本經濟%' or content like '%日本海外%' or content like '%日本消費%' then 1 else 0 end ) as Score,'JPY' as Currency,date_trunc('day',datetime) as Data_Dt from cnYes group by Data_Dt,Currency;
+insert into feature (data_dt,currency,score)  (select data_dt,currency,score from C order by data_Dt);
+create temporary table D as select sum(case when content like '%歐元%' or content like '%德國%' or content like '%英鎊%' or content like '%歐債%' then 1 else 0 end ) as Score,'EUR' as Currency,date_trunc('day',datetime) as Data_Dt from cnYes group by Data_Dt,Currency;
+insert into feature (data_dt,currency,score)  (select data_dt,currency,score from D order by data_Dt);
+drop table features;
+create table Features as select A.Data_Dt,EXTRACT(EPOCH FROM A.data_dt-'1970-01-01')/86400 as delta,A.score as CNY_score,B.score as USD_Score,C.score as JPY_Score, D.score as EUR_score from A left join B on A.data_Dt = B.data_Dt left join C on A.Data_dt = C.data_dt left join D on A.Data_Dt = D.Data_Dt;
